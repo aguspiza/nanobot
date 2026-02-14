@@ -240,6 +240,13 @@ class Config(BaseSettings):
         """Match provider config and its registry name. Returns (config, spec_name)."""
         from nanobot.providers.registry import PROVIDERS
         model_lower = (model or self.agents.defaults.model).lower()
+        provider_name = model_lower.split("/")[0]
+
+        # First try exact match on provider name (e.g. "openrouter", "deepseek")
+        for spec in PROVIDERS:
+            p = getattr(self.providers, spec.name, None)
+            if p and provider_name == spec.name and p.api_key:
+                return p, spec.name
 
         # Match by keyword (order follows PROVIDERS registry)
         for spec in PROVIDERS:
